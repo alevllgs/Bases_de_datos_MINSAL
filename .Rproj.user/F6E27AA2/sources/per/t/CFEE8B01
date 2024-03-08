@@ -1,0 +1,26 @@
+{
+    "id": "CFEE8B01",
+    "path": "~/Rutas de R/Datos_publicos/AT_Urg/at_urg_respiratorio_semanal_parquet.R",
+    "project_path": "at_urg_respiratorio_semanal_parquet.R",
+    "type": "r_source",
+    "hash": "1453903925",
+    "contents": "",
+    "dirty": false,
+    "created": 1709908554379.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "18,0",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1709908452,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1709908452,
+    "read_only": false,
+    "read_only_alternatives": []
+}
