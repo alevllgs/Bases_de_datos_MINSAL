@@ -6,6 +6,7 @@ library(jsonlite)
 library(tidyverse)
 library(shinyWidgets)
 library(plotly)
+library(DT)
 
 # Obtener datos de la API
 url <- "https://datos.gob.cl/api/3/action/datastore_search?resource_id=2c44d782-3365-44e3-aefb-2c8b8363a1bc&limit=17000"
@@ -56,6 +57,8 @@ ui <- fluidPage(
       display: none;
     }
   "))
+  
+  
 )
 
 # Definir server
@@ -114,20 +117,39 @@ server <- function(input, output, session) {
       addTiles() %>%
       addCircleMarkers(~LongitudGlosa, ~LatitudGlosa,
                        color = colors,
-                       popup = ~paste("Establecimiento: ", `Nombre Oficial`, "Nivel de atención: ", NivelAtencionEstabglosa))
+                       popup = ~paste("<b>Establecimiento:</b> ", `Nombre Oficial`, "<br>",
+                                      "<b>Dependencia:</b> ", SeremiSaludGlosa_ServicioDeSaludGlosa, "<br>",
+                                      "<b>Nivel de atención:</b> ", NivelAtencionEstabglosa, "<br>",
+                                      "<b>Comuna:</b> ", ComunaGlosa)
+                       
+                       )
   })
   
-  output$table <- renderDataTable({
+  output$table <- DT::renderDataTable({
     filtered_data <- establecimientos_nacional %>%
       filter((input$region == "Todas" | RegionGlosa == input$region) &
                (input$servicio_salud == "Todas" | SeremiSaludGlosa_ServicioDeSaludGlosa == input$servicio_salud) &
                (input$tipo_establecimiento == "Todas" | TipoEstablecimientoGlosa == input$tipo_establecimiento))
     
-    filtered_data %>%
+    summarised_data <- filtered_data %>%
       group_by(TipoEstablecimientoGlosa) %>%
       summarise(count = n()) %>%
       arrange(desc(count))
-  }, options = list(searching = FALSE, lengthMenu = c(8, 20, 30)))
+    
+    DT::datatable(summarised_data,
+                  options = list(
+                    searching = FALSE,
+                    lengthMenu = c(8, 20, 30)
+                  ),
+                  rownames = FALSE)
+  })
+  
+  
+  
+  
+  
+  
+  
   
   output$plot <- renderPlotly({
     filtered_data <- establecimientos_nacional %>%
