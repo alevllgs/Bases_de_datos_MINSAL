@@ -22,6 +22,8 @@ establecimientos_nacional$LongitudGlosa <- gsub(",", ".", establecimientos_nacio
 # Convertir las columnas de longitud y latitud a números
 establecimientos_nacional$LatitudGlosa <- as.numeric(establecimientos_nacional$LatitudGlosa)
 establecimientos_nacional$LongitudGlosa <- as.numeric(establecimientos_nacional$LongitudGlosa)
+colnames(establecimientos_nacional)[colnames(establecimientos_nacional) == "Nombre Oficial"] <- "NombreOficial"
+
 
 # Ordenar los datos por nombre de región, servicio de salud y tipo de establecimiento
 establecimientos_nacional <- establecimientos_nacional %>%
@@ -117,12 +119,12 @@ server <- function(input, output, session) {
       addTiles() %>%
       addCircleMarkers(~LongitudGlosa, ~LatitudGlosa,
                        color = colors,
-                       popup = ~paste("<b>Establecimiento:</b> ", `Nombre Oficial`, "<br>",
+                       popup = ~paste("<b>Establecimiento:</b> ", `NombreOficial`, "<br>",
                                       "<b>Dependencia:</b> ", SeremiSaludGlosa_ServicioDeSaludGlosa, "<br>",
                                       "<b>Nivel de atención:</b> ", NivelAtencionEstabglosa, "<br>",
                                       "<b>Comuna:</b> ", ComunaGlosa)
                        
-                       )
+      )
   })
   
   output$table <- DT::renderDataTable({
@@ -168,8 +170,5 @@ server <- function(input, output, session) {
 
 # Ejecutar la aplicación
 shinyApp(ui = ui, server = server)
-
-
-
 
 
