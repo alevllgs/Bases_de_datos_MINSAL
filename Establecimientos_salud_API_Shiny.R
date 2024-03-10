@@ -5,6 +5,7 @@ library(httr)
 library(jsonlite)
 library(tidyverse)
 library(shinyWidgets)
+library(plotly)
 
 # Obtener datos de la API
 url <- "https://datos.gob.cl/api/3/action/datastore_search?resource_id=2c44d782-3365-44e3-aefb-2c8b8363a1bc&limit=17000"
@@ -30,16 +31,16 @@ ui <- fluidPage(
   titlePanel("Mapa de Establecimientos de Salud"),
   fluidRow(
     column(4,
-           pickerInput("region", "Región:",
-                       choices = c("Todas", sort(unique(establecimientos_nacional$RegionGlosa))),
-                       selected = "Todas")),
+           uiOutput("region_ui")),
     column(4,
            uiOutput("servicio_salud_ui")),
     column(4,
            uiOutput("tipo_establecimiento_ui"))
   ),
   fluidRow(
-    column(8,
+    column(4,
+           plotlyOutput("plot")),
+    column(4,
            leafletOutput("mapa")),
     column(4,
            dataTableOutput("table"))
@@ -57,13 +58,29 @@ ui <- fluidPage(
 # Definir server
 server <- function(input, output, session) {
   
+  # Filtro de regiones
+  output$region_ui <- renderUI({
+    if (input$servicio_salud != "Todas") {
+      regiones <- unique(establecimientos_nacional$RegionGlosa[establecimientos_nacional$SeremiSaludGlosa_ServicioDeSaludGlosa == input$servicio_salud])
+    } else {
+      regiones <- unique(establecimientos_nacional$RegionGlosa)
+    }
+    pickerInput("region", "Región:",
+                choices = c("Todas", sort(regiones)),
+                selected = "Todas")
+  })
+  
   # Filtro de servicio de salud según la región seleccionada
   output$servicio_salud_ui <- renderUI({
-    servicios <- unique(establecimientos_nacional$SeremiSaludGlosa_ServicioDeSaludGlosa[
-      if (input$region == "Todas") TRUE else establecimientos_nacional$RegionGlosa == input$region])
+    servicios <- unique(establecimientos_nacional$SeremiSaludGlosa_ServicioDeSaludGlosa)
+    selected_servicio <- if ("Servicio de Salud Metropolitano Oriente" %in% servicios) {
+      "Servicio de Salud Metropolitano Oriente"
+    } else {
+      "Todas"
+    }
     pickerInput("servicio_salud", "Servicio de Salud:",
                 choices = c("Todas", sort(servicios)),
-                selected = "Servicio de Salud Metropolitano Oriente")
+                selected = selected_servicio)
   })
   
   # Filtro de tipo de establecimiento según la región y/o servicio de salud seleccionados
@@ -77,6 +94,7 @@ server <- function(input, output, session) {
                 selected = "Todas")
   })
   
+  outputOptions(output, "region_ui", suspendWhenHidden = FALSE)
   outputOptions(output, "servicio_salud_ui", suspendWhenHidden = FALSE)
   outputOptions(output, "tipo_establecimiento_ui", suspendWhenHidden = FALSE)
   
@@ -104,7 +122,23 @@ server <- function(input, output, session) {
       summarise(count = n()) %>%
       arrange(desc(count))
   }, options = list(searching = FALSE, lengthMenu = c(12, 20, 30)))
+  
+  output$plot <- renderPlotly({
+    filtered_data <- establecimientos_nacional %>%
+      filter((input$region == "Todas" | RegionGlosa == input$region) &
+               (input$servicio_salud == "Todas" | SeremiSaludGlosa_ServicioDeSaludGlosa == input$servicio_salud) &
+               (input$tipo_establecimiento == "Todas" | TipoEstablecimientoGlosa == input$tipo_establecimiento))
+    
+    filtered_data %>%
+      group_by(NivelAtencionEstabglosa) %>%
+      summarise(count = n()) %>%
+      plot_ly(labels = ~NivelAtencionEstabglosa, values = ~count, type = 'pie') %>%
+      layout(title = "Distribución de Niveles de Atención")
+  })
 }
 
 # Ejecutar la aplicación
 shinyApp(ui = ui, server = server)
+
+
+
