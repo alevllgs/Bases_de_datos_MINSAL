@@ -34,15 +34,25 @@ color_palette <- c("orange", "blue", "green", "red", "purple", "yellow", "cyan",
 
 # Definir UI
 ui <- fluidPage(
-  titlePanel("Mapa de Establecimientos de Salud"),
+  titlePanel(div(style = "text-align: center; margin-top: 30px; margin-bottom: 30px;", tags$b("Establecimientos de Salud en Chile"))),
   fluidRow(
-    column(4,
-           uiOutput("region_ui")),
-    column(4,
-           uiOutput("servicio_salud_ui")),
-    column(4,
-           uiOutput("tipo_establecimiento_ui"))
+    style = "display: flex; justify-content: center;",  # Centramos los elementos horizontalmente
+    column(3,
+           uiOutput("region_ui"),
+           style = "color: gray; margin-right: 10px;"),  # Reducimos el ancho de la columna
+    column(3,
+           uiOutput("servicio_salud_ui"),
+           style = "color: gray; margin-right: 10px;"),  # Reducimos el ancho de la columna
+    column(3,
+           uiOutput("tipo_establecimiento_ui"),
+           style = "color: gray;")  # Mantenemos el ancho de la columna original
   ),
+  tags$style(HTML("
+    .spacer {
+      margin-bottom: 30px;
+    }
+  ")),
+  fluidRow(class = "spacer"),
   fluidRow(
     column(4,
            plotlyOutput("plot")),
@@ -59,9 +69,8 @@ ui <- fluidPage(
       display: none;
     }
   "))
-  
-  
 )
+
 
 # Definir server
 server <- function(input, output, session) {
@@ -134,10 +143,12 @@ server <- function(input, output, session) {
                (input$tipo_establecimiento == "Todas" | TipoEstablecimientoGlosa == input$tipo_establecimiento))
     
     filtered_data %>%
-      group_by(TipoEstablecimientoGlosa) %>%
-      summarise(count = n()) %>%
-      arrange(desc(count))
+      group_by(TipoEstablecimientoGlosa) %>% 
+      summarise(Cantidad = n()) %>%
+      arrange(TipoEstablecimientoGlosa) %>%
+      rename(`Tipo de establecimiento` = TipoEstablecimientoGlosa)
   }, options = list(searching = FALSE, lengthMenu = c(8, 20, 30)))
+  
   
   
   
