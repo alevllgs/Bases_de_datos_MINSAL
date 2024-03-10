@@ -127,28 +127,17 @@ server <- function(input, output, session) {
       )
   })
   
-  output$table <- DT::renderDataTable({
+  output$table <- renderDataTable({
     filtered_data <- establecimientos_nacional %>%
       filter((input$region == "Todas" | RegionGlosa == input$region) &
                (input$servicio_salud == "Todas" | SeremiSaludGlosa_ServicioDeSaludGlosa == input$servicio_salud) &
                (input$tipo_establecimiento == "Todas" | TipoEstablecimientoGlosa == input$tipo_establecimiento))
     
-    summarised_data <- filtered_data %>%
+    filtered_data %>%
       group_by(TipoEstablecimientoGlosa) %>%
       summarise(count = n()) %>%
       arrange(desc(count))
-    
-    DT::datatable(summarised_data,
-                  options = list(
-                    searching = FALSE,
-                    lengthMenu = c(8, 20, 30)
-                  ),
-                  rownames = FALSE)
-  })
-  
-  
-  
-  
+  }, options = list(searching = FALSE, lengthMenu = c(8, 20, 30)))
   
   
   
@@ -170,5 +159,3 @@ server <- function(input, output, session) {
 
 # Ejecutar la aplicación
 shinyApp(ui = ui, server = server)
-
-

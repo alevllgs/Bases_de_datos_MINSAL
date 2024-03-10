@@ -1,0 +1,19 @@
+---
+  title: "Mapa de Establecimientos de Salud"
+output: 
+  flexdashboard::flex_dashboard:
+  orientation: columns
+vertical_layout: fill
+---
+  
+  
+
+
+
+
+
+
+
+
+
+
