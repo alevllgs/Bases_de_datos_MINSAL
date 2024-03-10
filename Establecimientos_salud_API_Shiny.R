@@ -114,7 +114,7 @@ server <- function(input, output, session) {
       addTiles() %>%
       addCircleMarkers(~LongitudGlosa, ~LatitudGlosa,
                        color = colors,
-                       popup = ~paste("Establecimiento: ", `Nombre Oficial`))
+                       popup = ~paste("Establecimiento: ", `Nombre Oficial`, "Nivel de atención: ", NivelAtencionEstabglosa))
   })
   
   output$table <- renderDataTable({
@@ -127,7 +127,7 @@ server <- function(input, output, session) {
       group_by(TipoEstablecimientoGlosa) %>%
       summarise(count = n()) %>%
       arrange(desc(count))
-  }, options = list(searching = FALSE, lengthMenu = c(12, 20, 30)))
+  }, options = list(searching = FALSE, lengthMenu = c(8, 20, 30)))
   
   output$plot <- renderPlotly({
     filtered_data <- establecimientos_nacional %>%
