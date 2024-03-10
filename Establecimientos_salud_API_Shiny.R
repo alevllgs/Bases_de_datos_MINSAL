@@ -26,6 +26,9 @@ establecimientos_nacional$LongitudGlosa <- as.numeric(establecimientos_nacional$
 establecimientos_nacional <- establecimientos_nacional %>%
   arrange(RegionGlosa, SeremiSaludGlosa_ServicioDeSaludGlosa, TipoEstablecimientoGlosa)
 
+# Definir paleta de colores
+color_palette <- c("orange", "blue", "green", "red", "purple", "yellow", "cyan", "magenta", "brown", "gray")
+
 # Definir UI
 ui <- fluidPage(
   titlePanel("Mapa de Establecimientos de Salud"),
@@ -104,10 +107,13 @@ server <- function(input, output, session) {
                (input$servicio_salud == "Todas" | SeremiSaludGlosa_ServicioDeSaludGlosa == input$servicio_salud) &
                (input$tipo_establecimiento == "Todas" | TipoEstablecimientoGlosa == input$tipo_establecimiento))
     
+    # Asignar un color diferente a cada nivel de atención
+    colors <- color_palette[as.numeric(factor(filtered_data$NivelAtencionEstabglosa))]
+    
     leaflet(data = filtered_data) %>%
       addTiles() %>%
       addCircleMarkers(~LongitudGlosa, ~LatitudGlosa,
-                       color = ifelse(filtered_data$TipoEstablecimientoGlosa == "Hospital", "red", "blue"),
+                       color = colors,
                        popup = ~paste("Establecimiento: ", `Nombre Oficial`))
   })
   
@@ -129,16 +135,19 @@ server <- function(input, output, session) {
                (input$servicio_salud == "Todas" | SeremiSaludGlosa_ServicioDeSaludGlosa == input$servicio_salud) &
                (input$tipo_establecimiento == "Todas" | TipoEstablecimientoGlosa == input$tipo_establecimiento))
     
+    
     filtered_data %>%
       group_by(NivelAtencionEstabglosa) %>%
       summarise(count = n()) %>%
-      plot_ly(labels = ~NivelAtencionEstabglosa, values = ~count, type = 'pie') %>%
+      plot_ly(labels = ~NivelAtencionEstabglosa, values = ~count, type = 'pie', marker = list(colors = color_palette)) %>%
       layout(title = "Distribución de Niveles de Atención")
   })
 }
 
 # Ejecutar la aplicación
 shinyApp(ui = ui, server = server)
+
+
 
 
 
